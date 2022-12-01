@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf‐8" />
+    <title>Web audio</title>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <h1 id="title">PIXTONE</h1>
+
+      <div class="canvasContainer">
+        <canvas id="canvas"></canvas>
+      </div>
+
+      <div id="controller">
+        <div id="buttonContainer">
+          <button id="playButton" class="button"></button>
+          <button id="clearButton" class="button"></button>
+        </div>
+
+        <select id="selectSound">
+          <option value="">--Sound type--</option>
+          <option value="sine">Sine</option>
+          <option value="square">Square</option>
+          <option value="sawtooth">Sawtooth</option>
+          <option value="triangle">Triangle</option>
+        </select>
+      </div>
+    </div>
+    <script src="main.js"></script>
+  </body>
+</html>
