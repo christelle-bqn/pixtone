@@ -1,3 +1,5 @@
+import { models, notes } from "./pixelModels.js";
+
 const BaseAudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new BaseAudioContext();
 
@@ -7,54 +9,32 @@ const ctx = canvas.getContext("2d");
 const clearButton = document.getElementById("clearButton");
 const playButton = document.getElementById("playButton");
 const selectSoundType = document.getElementById("selectSound");
+const selectPixelModel = document.getElementById("selectPixelModel");
 
 let soundType = "sine";
+let pixelModel = "";
+
+let playing = false;
 
 const paths = [];
 
 const melody = [];
 
-const notes = [
-  {
-    key: "B",
-    frequency: 494,
-    color: "#F3A0DC", //pink
-  },
+function generateModels(name) {
+  const modelSelected = models.find((model) => model.name === name);
 
-  {
-    key: "A",
-    frequency: 440,
-    color: "#F9C577", //orange
-  },
-  {
-    key: "G",
-    frequency: 392,
-    color: "#AA93E9", //purple
-  },
+  if (!modelSelected) return;
 
-  {
-    key: "F",
-    frequency: 349,
-    color: "#A0E381", //green
-  },
-  {
-    key: "E",
-    frequency: 330,
-    color: "#9FD8F8", //blue
-  },
-
-  {
-    key: "D",
-    frequency: 294,
-    color: "#FBF67E", //yellow
-  },
-
-  {
-    key: "C",
-    frequency: 262,
-    color: "#F87777", //red
-  },
-];
+  modelSelected.paths.map((model) => {
+    paths.forEach((path, index) => {
+      if (ctx.isPointInPath(path.path, model.x, model.y)) {
+        ctx.fillStyle = model.color;
+        ctx.fill(path.path);
+        melody.push(path);
+      }
+    });
+  });
+}
 
 function getNote(opt) {
   if (!opt) return;
@@ -69,8 +49,8 @@ function getNote(opt) {
 }
 
 function drawBoard() {
-  const rows = 7;
-  const cols = 14;
+  const rows = 10;
+  const cols = 10;
   const side = 30;
   const space = 1.5;
   canvas.width = cols * side * space + 10;
@@ -96,7 +76,7 @@ function drawBoard() {
       }
     }
     path.closePath();
-    ctx.strokeStyle = "#898884";
+    ctx.strokeStyle = "#ffffff";
     ctx.stroke(path);
 
     paths.push({
@@ -105,23 +85,6 @@ function drawBoard() {
       color: getNote("color"),
     });
   }
-}
-
-let posX = 0;
-let speed = 2;
-
-function drawBar(posX = 0) {
-  let path = new Path2D();
-
-  path.moveTo(posX, 0);
-  path.lineTo(posX, canvas.height);
-
-  path.closePath();
-
-  ctx.strokeStyle = "#2b2b2b";
-  ctx.lineWidth = 5;
-  ctx.lineCap = "butt";
-  ctx.stroke(path);
 }
 
 function playNote(freq) {
@@ -139,11 +102,11 @@ function playNote(freq) {
   });
 }
 
-async function play() {
-  if (!melody.length) return;
-
+async function play(e) {
   for (const node of melody) {
     await playNote(node.frequency);
+    playing = false;
+    e.target.classList.remove("clicked");
   }
 }
 
@@ -160,7 +123,6 @@ function clearCanvas() {
 
 function init() {
   drawBoard();
-  drawBar();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -184,15 +146,31 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   clearButton.addEventListener("click", (e) => {
+    e.target.classList.add("clicked");
     clearCanvas();
     stopPlay();
+    pixelModel = "";
+    selectPixelModel.value = "";
   });
 
   playButton.addEventListener("click", (e) => {
-    play();
+    if (!melody.length) return;
+
+    e.target.classList.add("clicked");
+    play(e);
   });
 
   selectSoundType.addEventListener("change", (e) => {
     soundType = e.target.value;
+  });
+
+  selectPixelModel.addEventListener("change", (e) => {
+    pixelModel = e.target.value;
+
+    clearCanvas();
+    stopPlay();
+
+    if (pixelModel.length === 0) return;
+    generateModels(pixelModel);
   });
 });
